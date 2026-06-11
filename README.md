@@ -1,59 +1,210 @@
-# PINN-Fourier-Lorenz – Reconstruction de dynamiques chaotiques à partir de mesures partielles
+# PINN-Fourier-Lorenz
 
-**Réseaux de neurones informés par la physique (PINNs) appliqués au système de Lorenz – de la solution directe à la reconstruction avec un seul capteur**
+## Physics-Informed Neural Networks for Chaotic Dynamical System Reconstruction
 
-[![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENCE)
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-1.12%2B-red)
+This repository presents a research project conducted during my Master’s degree in Mathematical Engineering and Data Science at the University of Haute-Alsace (UHA). The project focuses on the application of **Physics-Informed Neural Networks (PINNs)** to solve and reconstruct chaotic dynamical systems governed by ordinary differential equations.
 
----
+The Lorenz system was chosen as the benchmark problem because of its highly nonlinear and chaotic behavior.
 
-## 📌 Présentation du projet
-
-Ce dépôt contient les codes et les résultats de mon projet de recherche de Master 1 (IMDS, UHA) sur l’utilisation des **réseaux de neurones informés par la physique** pour résoudre des équations différentielles ordinaires, avec une application au **système chaotique de Lorenz**.
-
-Deux architectures sont comparées :
-- **PINN standard** : un perceptron multicouche (MLP) classique recevant le temps en entrée.
-- **PINN avec Fourier Features** : le même MLP, mais l’entrée est enrichie par des fonctions sinusoïdales de fréquences multiples (1, 2, 4, 8, 16, 32) pour lutter contre le biais spectral des réseaux à activation \(\tanh\).
-
-Deux types de problèmes sont étudiés :
-1. **Problème direct** : prédire l’état complet \((x(t),y(t),z(t))\) à partir de 500 points de référence issus d’un solveur RK45.
-2. **Problèmes inverses** : reconstruire la dynamique complète en n’observant qu’**une seule** variable (soit \(x\), soit \(y\), soit \(z\)), ce qui simule un unique capteur météorologique.
+The main objective of this work is to compare a classical PINN architecture with an enhanced PINN using **Fourier Features** in order to improve the learning of high-frequency chaotic dynamics.
 
 ---
 
-## 🎯 Résultats clés
+## 📌 Project Overview
 
-| Problème | Modèle | Erreur L2 globale |
-|----------|--------|-------------------|
-| **Direct** (toutes les variables) | PINN standard | 0,105 |
-| | **PINN-Fourier** | **0,061** (−42 %) |
-| **Inverse : observation de \(Z\)** | PINN standard | 0,235 |
-| | PINN-Fourier | 0,206 |
-| **Inverse : observation de \(Y\)** | PINN standard | 0,251 |
-| | **PINN-Fourier** | **0,197** (meilleur) |
-| **Inverse : observation de \(X\)** | PINN standard | 0,277 |
-| | PINN-Fourier | 0,215 |
+Two neural network architectures are investigated:
 
-- Le PINN enrichi par des Fourier Features surpasse systématiquement le PINN standard.
-- La variable \(y\) est la plus informative pour la reconstruction, \(x\) la moins.
-- Même avec les Fourier Features, **l’observabilité partielle** reste une limitation fondamentale (les variables cachées divergent à long terme).
+### 🔹 Standard PINN
 
----
+A classical multilayer perceptron (MLP) receiving normalized time as input.
 
-## 🧠 Méthodologie
+### 🔹 PINN with Fourier Features
 
-- **Données** : 500 points de référence issus d’un solveur RK45 + 1000 points de collocation pour le résidu des équations ODE.
-- **Architecture** : 4 couches cachées de 256 neurones, fonction d’activation \(\tanh\), sortie linéaire (indispensable pour une régression sans borne).
-- **Fonction de perte** :  
-  \(\mathcal{L} = \lambda_{\text{data}}\,\mathcal{L}_{\text{data}} + \lambda_{\text{ODE}}\,\mathcal{L}_{\text{ODE}}\)  
-  Les résidus sont normalisés par \(\sigma_u/T\) afin d’équilibrer les contributions des trois variables.
-- **Optimisation** : apprentissage par curriculum (pré‑apprentissage supervisé, puis augmentation progressive de \(\lambda_{\text{ODE}}\), enfin raffinement par L‑BFGS).
+The same MLP architecture enriched with sinusoidal Fourier embeddings using multiple frequencies:
+
+[
+f_k \in {1,2,4,8,16,32}
+]
+
+This encoding helps reduce the spectral bias of neural networks with `tanh` activation functions and significantly improves the approximation of chaotic trajectories.
 
 ---
 
-## 🌍 Importance industrielle et climatique
+## ⚙️ Lorenz Dynamical System
 
-- **Météorologie / Climat** : reconstruire des champs atmosphériques complets à partir d’un seul capteur de vent ou de température. Améliore la prévision d’événements extrêmes (cyclones, canicules).
-- **Industrie** : surveiller des processus chaotiques (réacteurs chimiques, turbines, réseaux électriques) avec peu de capteurs → réduction des coûts et maintenance prédictive.
-- **Assimilation de données** : fusionner des modèles physiques avec des observations partielles.
+The Lorenz system is defined by:
+
+[
+\dot{x} = \sigma(y-x)
+]
+
+[
+\dot{y} = x(\rho-z)-y
+]
+
+[
+\dot{z} = xy-\beta z
+]
+
+with:
+
+* (\sigma = 10)
+* (\rho = 28)
+* (\beta = 8/3)
+
+These parameters generate the famous chaotic butterfly attractor.
+
+---
+
+## 🎯 Objectives
+
+This project aims to:
+
+* Evaluate the performance of PINNs on a chaotic nonlinear system.
+* Compare a standard PINN with a Fourier-enhanced PINN.
+* Study both direct and inverse problems.
+* Investigate partial observability when only one variable is measured.
+
+---
+
+## 🔬 Problems Studied
+
+### ✅ Direct Problem
+
+Predict the full dynamical state:
+
+[
+(x(t), y(t), z(t))
+]
+
+using reference trajectories generated with an RK45 numerical solver.
+
+---
+
+### ✅ Inverse Problems
+
+Reconstruct the complete dynamics while observing only one variable:
+
+* (x(t))
+* or (y(t))
+* or (z(t))
+
+This simulates realistic scenarios with a single physical sensor.
+
+---
+
+## 🧠 Model Architecture
+
+### Neural Network
+
+* 4 hidden layers
+* 256 neurons per layer
+* `tanh` activation
+* linear output layer
+
+### Training Data
+
+* 500 RK45 reference points
+* 1000 collocation points for ODE residuals
+
+### Loss Function
+
+The total loss combines:
+
+* supervised data loss
+* physics-based residual loss
+
+[
+\mathcal{L}
+===========
+
+\lambda_{data}\mathcal{L}*{data}
++
+\lambda*{ODE}\mathcal{L}_{ODE}
+]
+
+Residuals are normalized to balance the contribution of each variable.
+
+---
+
+## 🚀 Optimization Strategy
+
+Training is performed in three stages:
+
+1. Supervised pretraining
+2. Progressive introduction of physics constraints
+3. Final refinement using L-BFGS optimization
+
+This curriculum strategy improves convergence and training stability.
+
+---
+
+## 📊 Main Results
+
+| Problem              | Model            | Global L2 Error |
+| -------------------- | ---------------- | --------------- |
+| Direct Problem       | Standard PINN    | 0.105           |
+| Direct Problem       | **PINN-Fourier** | **0.061**       |
+| Inverse – Z observed | Standard PINN    | 0.235           |
+| Inverse – Z observed | PINN-Fourier     | 0.206           |
+| Inverse – Y observed | Standard PINN    | 0.251           |
+| Inverse – Y observed | **PINN-Fourier** | **0.197**       |
+| Inverse – X observed | Standard PINN    | 0.277           |
+| Inverse – X observed | PINN-Fourier     | 0.215           |
+
+---
+
+## 📈 Key Findings
+
+* Fourier Features consistently improve prediction accuracy.
+* PINN-Fourier better reconstructs chaotic attractors.
+* The variable (y) is the most informative for reconstruction.
+* Partial observability remains a major limitation in inverse problems.
+
+---
+
+## 🌍 Applications
+
+### 🌦️ Weather and Climate Modeling
+
+* Atmospheric state reconstruction
+* Data assimilation
+* Extreme event forecasting
+
+### 🏭 Industrial Monitoring
+
+* Predictive maintenance
+* Chaotic system monitoring
+* Sensor reduction strategies
+
+### ⚡ Scientific Computing
+
+* Physics-guided machine learning
+* Efficient differential equation solving
+* Hybrid AI-physics simulation methods
+
+---
+
+## 🛠️ Technologies
+
+* Python
+* PyTorch
+* NumPy
+* SciPy
+* Matplotlib
+
+---
+
+## 👨‍🎓 Author
+
+Kossi NOUMAGNO
+Master’s Student in Mathematical Engineering and Data Science
+University of Haute-Alsace (UHA)
+
+Supervised by Professor Cornel Marius Murea.
+
+---
+
+## 📄 License
+
+This project is released under the MIT License.
