@@ -57,7 +57,3 @@ Deux types de problèmes sont étudiés :
 - **Météorologie / Climat** : reconstruire des champs atmosphériques complets à partir d’un seul capteur de vent ou de température. Améliore la prévision d’événements extrêmes (cyclones, canicules).
 - **Industrie** : surveiller des processus chaotiques (réacteurs chimiques, turbines, réseaux électriques) avec peu de capteurs → réduction des coûts et maintenance prédictive.
 - **Assimilation de données** : fusionner des modèles physiques avec des observations partielles.
-
----
-
-## 📁 Structure du dépôt
